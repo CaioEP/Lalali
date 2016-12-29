@@ -32,6 +32,10 @@
 					$scope.contatos.push(angular.copy(contato));
 					delete $scope.contato;
 				};
+				$scope.removerContato = function (contato){
+					$scope.contatos.splice($scope.contatos.indexOf(contato),1);
+					delete $scope.contato;
+				};
 			});
 		</script>
 	</head>
@@ -42,10 +46,13 @@
 				<tr>
 					<td>Nome</td>
 					<td>Número</td>
+					<td>Ações</td>
 				</tr>
 				<tbody>
 					<tr ng-repeat="contato in contatos">
-						<td ng-repeat="(key,value) in contato">{{value}}</td>
+						<td ng-bind="contato.nome"></td>
+						<td ng-bind="contato.telefone"></td>
+						<td><span class="glyphicon glyphicon-remove" ng-click="removerContato(contato)"></span></td>
 					</tr>
 				</tbody>
 			</table>
