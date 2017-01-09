@@ -1,7 +1,9 @@
 <html ng-app="listaTelefonica">
 	<head>
 		<title>Lista Telefonica</title>
-		<script src="lib/angular.js"></script>
+		<script src="lib/js/angular.js"></script>
+		<script src="lib/js/angular-messages.js"></script>
+		<script src="lib/js/angular-locale_pt-br.js"></script>
 		<link rel="stylesheet" href="lib/bootstrap/bootstrap.css">
 		<style>
 			.jumbotron {
@@ -20,7 +22,7 @@
 			}
 		</style>
 		<script type="text/javascript">
-			angular.module("listaTelefonica",[]);
+			angular.module("listaTelefonica",["ngMessages"]);
 			angular.module("listaTelefonica").controller("listaTelefonicaController",function ($scope){
 				$scope.index = -1;
 				$scope.titulo = "Lista Telefônica";
@@ -45,6 +47,7 @@
 					delete $scope.contato;
 					$scope.btnPersistir = "Add";
 					$scope.index = -1;
+					$scope.formContato.$setPristine();
 				};
 				$scope.removerContato = function (contato){
 					$scope.contatos.splice($scope.contatos.indexOf(contato),1);
@@ -56,21 +59,26 @@
 					$scope.index = $scope.contatos.indexOf(contato);
 					$scope.btnPersistir = "Update";
 				};
+				$scope.ordenarPor = function (campo){
+					$scope.campoOrdenacao = campo;
+					$scope.direcaoOrdenacao = !$scope.direcaoOrdenacao;
+				};
 			});
 		</script>
 	</head>
 	<body ng-controller="listaTelefonicaController">
 		<div class="jumbotron">
 			<h3 ng-bind="titulo"></h4>
-			<table class="table table-striped">
+			<input class="form-control" placeholder="O que você deseja buscar?" type="text" ng-model="criterioDeBusca"/>			
+			<table ng-if="contatos.length > 0" class="table table-striped">
 				<tr>
-					<td>Nome</td>
-					<td>Número</td>
-					<td>Operadora</td>
+					<td><a href="javascript:void(0)" ng-click="ordenarPor('nome')">Nome</a></td>
+					<td><a href="javascript:void(0)" ng-click="ordenarPor('telefone')">Número</a></td>
+					<td><a href="javascript:void(0)" ng-click="ordenarPor('operadora')">Operadora</a></td>
 					<td colspan="2">Ações</td>
 				</tr>
 				<tbody>
-					<tr ng-repeat="contato in contatos">
+					<tr ng-repeat="contato in contatos | filter: criterioDeBusca | orderBy:campoOrdenacao:direcaoOrdenacao">
 						<td ng-bind="contato.nome"></td>
 						<td ng-bind="contato.telefone"></td>
 						<td ng-bind="contato.operadora.nome"></td>
@@ -82,10 +90,14 @@
 			<hr/>
 			<form name="formContato">
 			<input class="form-control" placeholder="Nome" type="text" ng-model="contato.nome" ng-required="true" name="nome"/>
-			<input class="form-control" placeholder="Telefone" type="text" ng-model="contato.telefone" ng-required="true" name="telefone"/>
-			<select class="form-control" ng-model="contato.operadora" ng-options="operadora.nome for operadora in operadoras" ng-required="true" name="operadora">
+			<input class="form-control" placeholder="Telefone" type="text" ng-model="contato.telefone" ng-required="true" name="telefone" ng-pattern="/^\d{4,5}-\d{4}$/"/>
+			<select class="form-control" ng-model="contato.operadora" ng-options="operadora.nome for operadora in operadoras | orderBy:'nome' track by operadora.codigo" ng-required="true" name="operadora">
 				<option value="">Selecione uma operadora</option>
 			</select>
+			<div ng-show="formContato.telefone.$dirty && formContato.telefone.$invalid" ng-messages="formContato.telefone.$error" class="alert alert-danger">
+				<p ng-message="required">O campo telefone precisa ser preenchido.</p>
+				<p ng-message="pattern">Telefone precisa estar neste formato DDDDD-DDDD.</p>
+			</div>
 		</form>
 			<button class="btn btn-primary btn-block" ng-disabled="formContato.$invalid" ng-click="adicionarContato(contato)" ng-bind="btnPersistir"></button>
 		</div>
