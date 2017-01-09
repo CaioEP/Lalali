@@ -22,19 +22,39 @@
 		<script type="text/javascript">
 			angular.module("listaTelefonica",[]);
 			angular.module("listaTelefonica").controller("listaTelefonicaController",function ($scope){
+				$scope.index = -1;
 				$scope.titulo = "Lista Telefônica";
+				$scope.btnPersistir = "Add";
 				$scope.contatos = [
 					{nome:"Caio", telefone:"993125505"},
 					{nome:"Mãe", telefone:"991401032"},
 					{nome:"Victoria", telefone:"997068024"}
 				];
+				$scope.operadoras = [
+					{nome:"Oi",codigo:"1"},
+					{nome:"Vivo",codigo:"11"},
+					{nome:"Tim",codigo:"21"},
+					{nome:"Claro",codigo:"32"}
+				];
 				$scope.adicionarContato=function (contato){
-					$scope.contatos.push(angular.copy(contato));
+					if($scope.index !== -1){
+						$scope.contatos[$scope.index] = contato;
+					}else{
+						$scope.contatos.push(angular.copy(contato));
+					}
 					delete $scope.contato;
+					$scope.btnPersistir = "Add";
+					$scope.index = -1;
 				};
 				$scope.removerContato = function (contato){
 					$scope.contatos.splice($scope.contatos.indexOf(contato),1);
 					delete $scope.contato;
+				};
+
+				$scope.alterarContato = function (contato){
+					$scope.contato = angular.copy(contato);
+					$scope.index = $scope.contatos.indexOf(contato);
+					$scope.btnPersistir = "Update";
 				};
 			});
 		</script>
@@ -46,20 +66,28 @@
 				<tr>
 					<td>Nome</td>
 					<td>Número</td>
-					<td>Ações</td>
+					<td>Operadora</td>
+					<td colspan="2">Ações</td>
 				</tr>
 				<tbody>
 					<tr ng-repeat="contato in contatos">
 						<td ng-bind="contato.nome"></td>
 						<td ng-bind="contato.telefone"></td>
+						<td ng-bind="contato.operadora.nome"></td>
 						<td><span class="glyphicon glyphicon-remove" ng-click="removerContato(contato)"></span></td>
+						<td><span class="glyphicon glyphicon-pencil" ng-click="alterarContato(contato)"></span></td>
 					</tr>
 				</tbody>
 			</table>
 			<hr/>
-			<input class="form-control" placeholder="Nome" type="text" ng-model="contato.nome" />
-			<input class="form-control" placeholder="Telefone" type="text" ng-model="contato.telefone" />
-			<button class="btn btn-primary btn-block" ng-click="adicionarContato(contato)">Add</button>
+			<form name="formContato">
+			<input class="form-control" placeholder="Nome" type="text" ng-model="contato.nome" ng-required="true" name="nome"/>
+			<input class="form-control" placeholder="Telefone" type="text" ng-model="contato.telefone" ng-required="true" name="telefone"/>
+			<select class="form-control" ng-model="contato.operadora" ng-options="operadora.nome for operadora in operadoras" ng-required="true" name="operadora">
+				<option value="">Selecione uma operadora</option>
+			</select>
+		</form>
+			<button class="btn btn-primary btn-block" ng-disabled="formContato.$invalid" ng-click="adicionarContato(contato)" ng-bind="btnPersistir"></button>
 		</div>
 	</body>
 </html>
